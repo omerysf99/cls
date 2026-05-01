@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video ve Bakiye Sayacı</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: black;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .video-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        #bg-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Bakiye Göstergesi Stili */
+        .balance-container {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            padding: 10px 30px;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+            z-index: 10;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .pulse {
+            animation: pulse-animation 0.5s ease-in-out;
+        }
+
+        @keyframes pulse-animation {
+            0% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.1); color: #4ade80; }
+            100% { transform: translateX(-50%) scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Üst Ortadaki Bakiye Paneli -->
+    <div class="balance-container" id="balance-display">
+        Bakiye: <span id="amount">0</span>₺
+    </div>
+
+    <div class="video-wrapper">
+        <video autoplay muted loop playsinline id="bg-video">
+            <!-- GitHub raw linkini buraya yapıştırın -->
+            <source src="BURAYA_GITHUB_MP4_LINKINI_YAPISTIR" type="video/mp4">
+            Tarayıcınız video etiketini desteklemiyor.
+        </video>
+    </div>
+
+    <script>
+        let currentBalance = 0;
+        const balanceElement = document.getElementById('amount');
+        const container = document.getElementById('balance-display');
+        const video = document.getElementById('bg-video');
+
+        // Bakiye artırma fonksiyonu
+        function increaseBalance() {
+            currentBalance += 8;
+            balanceElement.innerText = currentBalance;
+            
+            // Görsel efekt ekle
+            container.classList.remove('pulse');
+            void container.offsetWidth; // DOM'u tetikle
+            container.classList.add('pulse');
+        }
+
+        // Video her döngüye girdiğinde tetiklenir
+        video.onloop = function() {
+            increaseBalance();
+        };
+
+        // Alternatif: onloop her tarayıcıda stabil olmayabilir, 
+        // 'ended' eventini manuel yakalayıp veya zamanlayıcı kullanarak garantiye alalım.
+        video.addEventListener('play', () => {
+            // Video 8 saniye olduğu için her 8 saniyede bir artır
+            setInterval(() => {
+                if (!video.paused) {
+                    increaseBalance();
+                }
+            }, 8000);
+        });
+
+        window.onload = function() {
+            video.play().catch(error => {
+                document.body.addEventListener('click', () => {
+                    video.play();
+                }, { once: true });
+            });
+        };
+    </script>
+</body>
+</html>
