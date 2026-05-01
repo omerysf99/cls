@@ -45,6 +45,7 @@
             height: 100%;
             object-fit: cover;
             border-radius: 16px;
+            background: #000;
         }
 
         /* Bakiye Göstergesi Paneli */
@@ -94,35 +95,35 @@
         #error-msg {
             position: fixed;
             bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
             background: rgba(220, 38, 38, 0.9);
             padding: 12px 25px;
             border-radius: 12px;
             display: none;
             font-weight: 600;
-            animation: fadeInUp 0.5s ease-out;
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translate(-50%, 20px); }
-            to { opacity: 1; transform: translate(-50%, 0); }
+            z-index: 100;
+            text-align: center;
         }
     </style>
 </head>
 <body>
 
-    <div id="error-msg" style="left: 50%; transform: translateX(-50%);">
-        ⚠️ 'animasyon.mp4' bulunamadı!
+    <div id="error-msg">
+        ⚠️ 'animasyon.mp4' oynatılamıyor!<br>
+        <span style="font-size: 0.8rem; font-weight: 400;">Lütfen GitHub'daki dosyanın 'Raw' bağlantısını kullandığınızdan emin olun.</span>
     </div>
 
     <div class="video-frame">
-        <!-- Güncellenen Bakiye Paneli -->
         <div class="balance-panel" id="balance-display">
             <span class="balance-text">Bakiye</span>
             <span class="balance-amount"><span id="amount">0</span>₺</span>
         </div>
 
         <video autoplay muted loop playsinline id="bg-video">
+            <!-- Render üzerinde çalışırken dosya aynı dizindeyse bu yol doğrudur -->
             <source src="animasyon.mp4" type="video/mp4">
+            <!-- Alternatif olarak GitHub Raw linkinizi aşağıya ekleyebilirsiniz -->
             Tarayıcı desteği yok.
         </video>
     </div>
@@ -138,15 +139,15 @@
             currentBalance += 8;
             balanceElement.innerText = currentBalance;
             
-            // Animasyonu tetikle
             container.classList.remove('pulse');
             void container.offsetWidth; 
             container.classList.add('pulse');
         }
 
-        // Video her 8 saniyede bir bakiye artırır
+        // Bakiye artış döngüsü
         let interval;
         video.addEventListener('play', () => {
+            console.log("Video oynamaya başladı.");
             if (!interval) {
                 interval = setInterval(() => {
                     if (!video.paused) {
@@ -156,18 +157,26 @@
             }
         });
 
-        // Video hatası kontrolü
+        // Video yükleme hatası kontrolü
         video.onerror = function() {
+            console.error("Video hatası oluştu. Kaynak bulunamadı.");
             errorMsg.style.display = 'block';
         };
 
-        // Kullanıcı etkileşimi gerekirse video başlatma
+        // Otomatik oynatma kısıtlamalarını aşmak için
         window.onload = function() {
-            video.play().catch(() => {
-                document.body.addEventListener('click', () => {
-                    video.play();
-                }, { once: true });
-            });
+            // Videoyu zorla yükle
+            video.load();
+            
+            let playPromise = video.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.log("Otomatik oynatma engellendi, etkileşim bekleniyor.");
+                    document.body.addEventListener('click', () => {
+                        video.play();
+                    }, { once: true });
+                });
+            }
         };
     </script>
 </body>
