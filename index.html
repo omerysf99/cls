@@ -32,8 +32,8 @@
             box-shadow: 0 0 60px rgba(74, 222, 128, 0.15);
             border: 2px solid rgba(255, 255, 255, 0.05);
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            /* Görseli arka plan olarak ayarla (video yüklenmezse görünür) */
-            background-image: url('görsel.jpg');
+            /* Yedek görsel - video açılmazsa bu görünür */
+            background-image: url('gorsel.jpg'), url('görsel.jpg');
             background-size: cover;
             background-position: center;
         }
@@ -50,6 +50,8 @@
             object-fit: cover;
             border-radius: 16px;
             background: transparent;
+            position: relative;
+            z-index: 5;
         }
 
         /* Bakiye Göstergesi Paneli */
@@ -65,7 +67,7 @@
             border: 3px solid #4ade80;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 15px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(74, 222, 128, 0.3);
             z-index: 20;
         }
@@ -114,8 +116,7 @@
 <body>
 
     <div id="error-msg">
-        ⚠️ 'animasyon.mp4' oynatılamıyor!<br>
-        <span style="font-size: 0.8rem; font-weight: 400;">Şu an yedek görsel (görsel.jpg) gösteriliyor.</span>
+        ⚠️ Video yüklenemedi, bakiye artışı devam ediyor...
     </div>
 
     <div class="video-frame">
@@ -125,6 +126,7 @@
         </div>
 
         <video autoplay muted loop playsinline id="bg-video">
+            <!-- Dosyalar aynı klasörde olmalı -->
             <source src="animasyon.mp4" type="video/mp4">
             Tarayıcı desteği yok.
         </video>
@@ -146,30 +148,30 @@
             container.classList.add('pulse');
         }
 
-        // Bakiye artış döngüsü (8 saniyede bir)
+        // Bakiye artış döngüsü (8 saniyede bir bağımsız çalışır)
         setInterval(() => {
             increaseBalance();
         }, 8000);
 
-        // Video yükleme hatası kontrolü
+        // Hata denetimi
         video.onerror = function() {
-            console.error("Video hatası oluştu. Yedek görsel devrede.");
+            console.error("Video hatası!");
             errorMsg.style.display = 'block';
-            video.style.display = 'none'; // Videoyu gizle ki arka plandaki görsel.jpg görünsün
+            video.style.opacity = '0'; // Videoyu gizle arka plan görseli görünsün
         };
 
-        // Otomatik oynatma kısıtlamalarını aşmak için
+        // Video yüklendiğinde şeffaflığı aç
+        video.onloadeddata = function() {
+            video.style.opacity = '1';
+            errorMsg.style.display = 'none';
+        };
+
         window.onload = function() {
-            video.load();
-            let playPromise = video.play();
-            if (playPromise !== undefined) {
-                playPromise.catch(error => {
-                    console.log("Otomatik oynatma engellendi, etkileşim bekleniyor.");
-                    document.body.addEventListener('click', () => {
-                        video.play();
-                    }, { once: true });
-                });
-            }
+            video.play().catch(() => {
+                document.body.addEventListener('click', () => {
+                    video.play();
+                }, { once: true });
+            });
         };
     </script>
 </body>
