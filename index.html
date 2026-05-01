@@ -37,26 +37,26 @@
             top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(10px);
-            padding: 10px 30px;
-            border-radius: 50px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(15px);
+            padding: 12px 40px;
+            border-radius: 100px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
             color: white;
-            font-size: 2rem;
-            font-weight: bold;
+            font-size: 2.5rem;
+            font-weight: 800;
             z-index: 10;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .pulse {
-            animation: pulse-animation 0.5s ease-in-out;
+            animation: pulse-animation 0.6s ease-out;
         }
 
         @keyframes pulse-animation {
             0% { transform: translateX(-50%) scale(1); }
-            50% { transform: translateX(-50%) scale(1.1); color: #4ade80; }
+            50% { transform: translateX(-50%) scale(1.15); color: #4ade80; text-shadow: 0 0 20px #4ade80; }
             100% { transform: translateX(-50%) scale(1); }
         }
     </style>
@@ -70,8 +70,8 @@
 
     <div class="video-wrapper">
         <video autoplay muted loop playsinline id="bg-video">
-            <!-- GitHub kullanıcı adını ve depo adını aşağıdaki linke göre düzenle -->
-            <source src="https://raw.githubusercontent.com/KULLANICI_ADIN/REPO_ADIN/main/animasyon.mp4" type="video/mp4">
+            <!-- Dosyalar aynı klasörde olduğu için doğrudan isim yazıyoruz -->
+            <source src="animasyon.mp4" type="video/mp4">
             Tarayıcınız video etiketini desteklemiyor.
         </video>
     </div>
@@ -89,28 +89,24 @@
             
             // Görsel efekt ekle
             container.classList.remove('pulse');
-            void container.offsetWidth; // DOM'u tetikle
+            void container.offsetWidth; // DOM tetikleyici
             container.classList.add('pulse');
         }
 
-        // Video her döngüye girdiğinde tetiklenir
+        // Video her başa döndüğünde (8 saniye sonunda) bakiye artar
         video.onloop = function() {
             increaseBalance();
         };
 
-        // Alternatif: onloop her tarayıcıda stabil olmayabilir, 
-        // 'ended' eventini manuel yakalayıp veya zamanlayıcı kullanarak garantiye alalım.
-        video.addEventListener('play', () => {
-            // Video 8 saniye olduğu için her 8 saniyede bir artır
-            setInterval(() => {
-                if (!video.paused) {
-                    increaseBalance();
-                }
-            }, 8000);
+        // Garanti olması için 'ended' olayını da dinleyelim (bazı tarayıcılar için)
+        video.addEventListener('ended', function() {
+            increaseBalance();
         });
 
+        // Sayfa yüklendiğinde videoyu başlat
         window.onload = function() {
             video.play().catch(error => {
+                // Tarayıcı otomatik oynatmayı engellerse herhangi bir tıklama ile başlatır
                 document.body.addEventListener('click', () => {
                     video.play();
                 }, { once: true });
