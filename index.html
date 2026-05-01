@@ -32,6 +32,10 @@
             box-shadow: 0 0 60px rgba(74, 222, 128, 0.15);
             border: 2px solid rgba(255, 255, 255, 0.05);
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            /* Görseli arka plan olarak ayarla (video yüklenmezse görünür) */
+            background-image: url('görsel.jpg');
+            background-size: cover;
+            background-position: center;
         }
 
         .video-frame:hover {
@@ -45,7 +49,7 @@
             height: 100%;
             object-fit: cover;
             border-radius: 16px;
-            background: #000;
+            background: transparent;
         }
 
         /* Bakiye Göstergesi Paneli */
@@ -111,7 +115,7 @@
 
     <div id="error-msg">
         ⚠️ 'animasyon.mp4' oynatılamıyor!<br>
-        <span style="font-size: 0.8rem; font-weight: 400;">Lütfen GitHub'daki dosyanın 'Raw' bağlantısını kullandığınızdan emin olun.</span>
+        <span style="font-size: 0.8rem; font-weight: 400;">Şu an yedek görsel (görsel.jpg) gösteriliyor.</span>
     </div>
 
     <div class="video-frame">
@@ -121,9 +125,7 @@
         </div>
 
         <video autoplay muted loop playsinline id="bg-video">
-            <!-- Render üzerinde çalışırken dosya aynı dizindeyse bu yol doğrudur -->
             <source src="animasyon.mp4" type="video/mp4">
-            <!-- Alternatif olarak GitHub Raw linkinizi aşağıya ekleyebilirsiniz -->
             Tarayıcı desteği yok.
         </video>
     </div>
@@ -144,30 +146,21 @@
             container.classList.add('pulse');
         }
 
-        // Bakiye artış döngüsü
-        let interval;
-        video.addEventListener('play', () => {
-            console.log("Video oynamaya başladı.");
-            if (!interval) {
-                interval = setInterval(() => {
-                    if (!video.paused) {
-                        increaseBalance();
-                    }
-                }, 8000);
-            }
-        });
+        // Bakiye artış döngüsü (8 saniyede bir)
+        setInterval(() => {
+            increaseBalance();
+        }, 8000);
 
         // Video yükleme hatası kontrolü
         video.onerror = function() {
-            console.error("Video hatası oluştu. Kaynak bulunamadı.");
+            console.error("Video hatası oluştu. Yedek görsel devrede.");
             errorMsg.style.display = 'block';
+            video.style.display = 'none'; // Videoyu gizle ki arka plandaki görsel.jpg görünsün
         };
 
         // Otomatik oynatma kısıtlamalarını aşmak için
         window.onload = function() {
-            // Videoyu zorla yükle
             video.load();
-            
             let playPromise = video.play();
             if (playPromise !== undefined) {
                 playPromise.catch(error => {
